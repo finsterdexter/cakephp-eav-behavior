@@ -1,0 +1,7 @@
+This behavior assumes we have a model (the entity table) and an model_attribute table (the attribute table) and a join table between the two (an EAV table).
+
+for example: widgets, widget_attributes, and widgets_widget_attributes
+
+This behavior also requires that the Widget model has a HABTM association with WidgetAttribute (the name of the associated table can be controlled with the 'with' setting in the $actsAs array).
+
+Also requires the name of the HABTM association to match the 'with' setting
