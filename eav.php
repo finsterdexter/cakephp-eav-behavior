@@ -1,12 +1,16 @@
 <?php
 /*
+
 This behavior assumes we have a model (the entity table) and an model_attribute table (the attribute table) and a join table between the two (an EAV table).
 
 for example: widgets, widget_attributes, and widgets_widget_attributes
 
+The attribute table needs a key field.
+The EAV table needs a val field.
+
 This behavior also requires that the Widget model has a HABTM association with WidgetAttribute (the name of the associated table can be controlled with the 'with' setting in the $actsAs array).
 
-requires the name of the HABTM association to match the with
+Also requires the name of the HABTM association to match the 'with' setting
 
 */
 class EavBehavior extends ModelBehavior
@@ -74,11 +78,11 @@ class EavBehavior extends ModelBehavior
 			if (isset($Model->data[$Model->alias][$attribute[$with]['key']]) && !empty($Model->data[$Model->alias][$attribute[$with]['key']]))
 			{
 				// clear value for this attribute and re-add
-				$Model->{$join_alias}->deleteAll(array('user_id' => $user_id, 'user_attribute_id' => $attribute[$with]['id']), false, false);
+				$Model->{$join_alias}->deleteAll(array($Model->hasAndBelongsToMany[$with]['foreignKey'] => $Model->data[$Model->alias]['id'], $Model->hasAndBelongsToMany[$with]['associationForeignKey'] => $attribute[$with]['id']), false, false);
 				$attribute_data = array(
 					"$join_alias" => array(
-						'user_id' => $user_id,
-						'user_attribute_id' => $attribute[$with]['id'],
+						$Model->hasAndBelongsToMany[$with]['foreignKey'] => $Model->data[$Model->alias]['id'],
+						$Model->hasAndBelongsToMany[$with]['associationForeignKey'] => $attribute[$with]['id'],
 						'val' => $Model->data[$Model->alias][$attribute[$with]['key']]
 					)
 				);
