@@ -41,6 +41,8 @@ class EavBehavior extends ModelBehavior
 		}
 		foreach ($results as $i => $item) {
 			foreach ($item[$with] as $j => $field) {
+				// could add some post-processing here for checkboxes, etc.?
+				
 				$results[$i][$Model->alias][$field['key']] = $field[$join_alias]['val'];
 			}
 		}
@@ -72,22 +74,26 @@ class EavBehavior extends ModelBehavior
 		}
 		
 		// get all attributes and parse those out from incoming data and save them separately
-		$attributes = $Model->{$with}->find('all');
+		$attributes = $Model->{$with}->find('all'); // TODO: store this with the object so that we don't have to pull it for every record
 		foreach ($attributes as $attribute)
 		{
-			if (isset($Model->data[$Model->alias][$attribute[$with]['key']]) && !empty($Model->data[$Model->alias][$attribute[$with]['key']]))
+			if (isset($Model->data[$Model->alias][$attribute[$with]['key']]))
 			{
 				// clear value for this attribute and re-add
 				$Model->{$join_alias}->deleteAll(array($Model->hasAndBelongsToMany[$with]['foreignKey'] => $Model->data[$Model->alias]['id'], $Model->hasAndBelongsToMany[$with]['associationForeignKey'] => $attribute[$with]['id']), false, false);
-				$attribute_data = array(
-					"$join_alias" => array(
-						$Model->hasAndBelongsToMany[$with]['foreignKey'] => $Model->data[$Model->alias]['id'],
-						$Model->hasAndBelongsToMany[$with]['associationForeignKey'] => $attribute[$with]['id'],
-						'val' => $Model->data[$Model->alias][$attribute[$with]['key']]
-					)
-				);
-				$Model->{$join_alias}->create();
-				$Model->{$join_alias}->save($attribute_data);
+				
+				if (!empty($Model->data[$Model->alias][$attribute[$with]['key']]))
+				{
+					$attribute_data = array(
+						"$join_alias" => array(
+							$Model->hasAndBelongsToMany[$with]['foreignKey'] => $Model->data[$Model->alias]['id'],
+							$Model->hasAndBelongsToMany[$with]['associationForeignKey'] => $attribute[$with]['id'],
+							'val' => $Model->data[$Model->alias][$attribute[$with]['key']]
+						)
+					);
+					$Model->{$join_alias}->create();
+					$Model->{$join_alias}->save($attribute_data);
+				}
 			}
 		}
 	}
